@@ -1,4 +1,4 @@
-name: Build, Pack & Publish NuGet
+name: Build and Publish to GitHub Packages
 
 on:
   push:
@@ -10,7 +10,7 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - name: Checkout
+    - name: Checkout repository
       uses: actions/checkout@v3
 
     - name: Setup .NET 8 SDK
@@ -20,21 +20,19 @@ jobs:
 
     - name: Restore dependencies
       run: dotnet restore
+      working-directory: CalculatorApp
 
-    - name: Build Release
+    - name: Build in Release mode
       run: dotnet build -c Release --no-restore
+      working-directory: CalculatorApp
 
     - name: Pack NuGet package
-      id: pack
       run: |
-        VERSION=$(git describe --tags --always --dirty="-dev")
-        echo "##[set-output name=version;]$VERSION"
+        VERSION="1.0.${{ github.run_number }}"
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
         dotnet pack -c Release -p:PackageVersion=$VERSION --no-build -o ./nupkg
+      working-directory: CalculatorApp
 
     - name: Publish package to GitHub Packages
-      uses: nuget/setup-nuget@v1
-      with:
-        nuget-api-key: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Push package
       run: dotnet nuget push ./nupkg/*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --skip-duplicate
+      working-directory: CalculatorApp
