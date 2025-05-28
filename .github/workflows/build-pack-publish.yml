@@ -4,10 +4,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - '**.cs'
-      - '**.csproj'
-      - '**.sln'
 
 jobs:
   build-pack-publish:
