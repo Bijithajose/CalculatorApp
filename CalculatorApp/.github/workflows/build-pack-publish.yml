@@ -1,0 +1,40 @@
+name: Build, Pack & Publish NuGet
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-pack-publish:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Setup .NET 8 SDK
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build Release
+      run: dotnet build -c Release --no-restore
+
+    - name: Pack NuGet package
+      id: pack
+      run: |
+        VERSION=$(git describe --tags --always --dirty="-dev")
+        echo "##[set-output name=version;]$VERSION"
+        dotnet pack -c Release -p:PackageVersion=$VERSION --no-build -o ./nupkg
+
+    - name: Publish package to GitHub Packages
+      uses: nuget/setup-nuget@v1
+      with:
+        nuget-api-key: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Push package
+      run: dotnet nuget push ./nupkg/*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --skip-duplicate
