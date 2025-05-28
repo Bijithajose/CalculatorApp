@@ -4,16 +4,20 @@ on:
   push:
     branches:
       - main
+    paths:
+      - '**.cs'
+      - '**.csproj'
+      - '**.sln'
 
 jobs:
   build-pack-publish:
     runs-on: windows-latest
 
     steps:
-    - name: Checkout repository
+    - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Setup .NET 8 SDK
+    - name: Setup .NET SDK
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 8.0.x
@@ -26,11 +30,8 @@ jobs:
       run: dotnet build -c Release --no-restore
       working-directory: CalculatorApp
 
-    - name: Pack NuGet package
-      run: |
-        VERSION="1.0.${{ github.run_number }}"
-        echo "VERSION=$VERSION" >> $GITHUB_ENV
-        dotnet pack -c Release -p:PackageVersion=$VERSION --no-build -o ./nupkg
+    - name: Pack NuGet package (static version from .csproj)
+      run: dotnet pack -c Release --no-build -o ./nupkg
       working-directory: CalculatorApp
 
     - name: Publish package to GitHub Packages
