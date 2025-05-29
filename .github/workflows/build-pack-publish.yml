@@ -1,40 +1,35 @@
-name: Build and Publish CalculatorApp with MathNet
+name: Build and Publish to GitHub Packages
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
-  build-and-publish:
-    runs-on: ubuntu-latest
-
-    env:
-      PACKAGE_VERSION: 1.0.${{ github.run_number }}
+  build-pack-publish:
+    runs-on: windows-latest
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: '8.0.x'
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 8.0.x
 
-      - name: Add GitHub Packages Source
-        run: dotnet nuget add source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json --name github --username ${{ github.actor }} --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text
+    - name: Restore dependencies
+      run: dotnet restore
+      working-directory: CalculatorApp
 
-      - name: Restore Dependencies
-        run: dotnet restore CalculatorApp/CalculatorApp.csproj
+    - name: Build in Release mode
+      run: dotnet build -c Release --no-restore
+      working-directory: CalculatorApp
 
-      - name: Build Project
-        run: dotnet build CalculatorApp/CalculatorApp.csproj --configuration Release
+    - name: Pack NuGet package (static version from .csproj)
+      run: dotnet pack -c Release --no-build -o ./nupkg
+      working-directory: CalculatorApp
 
-      - name: Inject Version Number
-        run: |
-          sed -i "s|<VersionPrefix>.*</VersionPrefix>|<VersionPrefix>${{ env.PACKAGE_VERSION }}</VersionPrefix>|" CalculatorApp/CalculatorApp.csproj
-
-      - name: Pack Project
-        run: dotnet pack CalculatorApp/CalculatorApp.csproj --configuration Release --output ./nupkg
-
-      - name: Push to GitHub Packages
-        run: dotnet nuget push ./nupkg/*.nupkg --source github --api-key ${{ secrets.GITHUB_TOKEN }}
+    - name: Publish package to GitHub Packages
+      run: dotnet nuget push D:\a\CalculatorApp\CalculatorApp\CalculatorApp\nupkg\*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --skip-duplicate
+      working-directory: CalculatorApp
