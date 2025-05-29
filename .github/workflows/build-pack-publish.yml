@@ -2,7 +2,7 @@ name: Build and Publish CalculatorApp with MathNet
 
 on:
   push:
-    branches: [ main ]
+    branches: [ features/yml_test ]
 
 jobs:
   build-and-publish:
