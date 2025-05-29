@@ -1,11 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
 		<TargetFramework>net8.0</TargetFramework>
 		<VersionPrefix>1.0.0</VersionPrefix>
 		<PackageId>CalculatorApp</PackageId>
-		<Version>1.0.0</Version>
 		<Authors>Bijithajose</Authors>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<RepositoryUrl>https://github.com/Bijithajose/CalculatorApp</RepositoryUrl>
@@ -17,10 +15,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Content Include="bin\Release\net8.0\CalculatorApp.exe">
-			<Pack>true</Pack>
-			<PackagePath>tools/</PackagePath>
-		</Content>
+		<None Include="bin\Release\net8.0\CalculatorApp.dll" Pack="true" PackagePath="tools/net8.0/any/" />
+		<None Include="bin\Release\net8.0\CalculatorApp.exe" Pack="true" PackagePath="tools/net8.0/any/" />
 	</ItemGroup>
-
 </Project>
